@@ -162,10 +162,10 @@ fun PokemonEntry(
                     modifier = Modifier
                         .padding(horizontal = 6.dp, vertical = 3.dp)
                         .height(115.dp)
-                        .width(77.dp)
+                        .width(115.dp)
                         .clip(RoundedCornerShape(8.dp)),
                     painter = painter,
-                    contentDescription = "Poster Image",
+                    contentDescription = "Image",
                     contentScale = ContentScale.FillBounds,
                 )
                 if (isImageLoading) {
