@@ -40,7 +40,7 @@ object AppModule {
     @Provides
     fun providePokemonDatabase(@ApplicationContext context: Context): PokemonDatabase =
         Room
-            .databaseBuilder(context, PokemonDatabase::class.java, "pokemon_database12")
+            .databaseBuilder(context, PokemonDatabase::class.java, "pokemon_db")
             .allowMainThreadQueries()
             .build()
 

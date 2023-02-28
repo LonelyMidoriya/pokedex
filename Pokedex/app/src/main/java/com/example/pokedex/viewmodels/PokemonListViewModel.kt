@@ -23,7 +23,7 @@ class PokemonListViewModel @Inject constructor(
         Pager(
             config = PagingConfig(
                 pageSize = PAGE_SIZE,
-                prefetchDistance = 10,
+                prefetchDistance = 0,
             ),
             pagingSourceFactory = {
                 pokemonDatabase.getEntriesDao().getEntries()

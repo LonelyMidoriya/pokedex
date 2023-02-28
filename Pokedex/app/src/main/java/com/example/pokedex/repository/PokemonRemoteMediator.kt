@@ -11,6 +11,8 @@ import com.example.pokedex.util.Converters
 import com.example.pokedex.database.PokemonDatabase
 import com.example.pokedex.database.RemoteKeys
 import com.example.pokedex.util.Constants
+import com.example.pokedex.util.Constants.IMAGE_URL
+import kotlinx.coroutines.delay
 import retrofit2.HttpException
 import java.io.IOException
 import java.util.*
@@ -20,8 +22,8 @@ import java.util.concurrent.TimeUnit
 class PokemonRemoteMediator (
     private val pokemonRepository: PokemonRepository,
     private val pokemonDatabase: PokemonDatabase,
-
     private var currentPage: Int = 0
+
 ): RemoteMediator<Int, PokemonListEntry>() {
 
     override suspend fun initialize(): InitializeAction {
@@ -64,8 +66,7 @@ class PokemonRemoteMediator (
         loadType: LoadType,
         state: PagingState<Int, PokemonListEntry>
     ): MediatorResult {
-
-        val page: Int = when (loadType) {
+        when (loadType) {
             LoadType.REFRESH -> {
                 val remoteKeys = getRemoteKeyClosestToCurrentPosition(state)
                 remoteKeys?.nextKey?.minus(1) ?: 1
@@ -76,26 +77,17 @@ class PokemonRemoteMediator (
                 prevKey ?: return MediatorResult.Success(endOfPaginationReached = remoteKeys != null)
             }
             LoadType.APPEND -> {
-                currentPage++
+
                 val remoteKeys = getRemoteKeyForLastItem(state)
                 val nextKey = remoteKeys?.nextKey
                 nextKey ?: return MediatorResult.Success(endOfPaginationReached = remoteKeys != null)
+                currentPage++
             }
         }
 
         try {
-            val newCurrentPage: Int
-            if(currentPage==0){
-                newCurrentPage = currentPage
-            }
-            else
-            {
-                newCurrentPage = currentPage - 1
-            }
-
-            val apiResponsePokemonList = pokemonRepository.getPokemonList(Constants.PAGE_SIZE, (newCurrentPage) * Constants.PAGE_SIZE)
+            val apiResponsePokemonList = pokemonRepository.getPokemonList(Constants.PAGE_SIZE, (currentPage) * Constants.PAGE_SIZE)
             val pokemons: MutableList<DBPokemon> = mutableListOf()
-
             val endOfPaginationReached: Boolean
             if (apiResponsePokemonList.data==null){
                 endOfPaginationReached = true
@@ -108,8 +100,8 @@ class PokemonRemoteMediator (
                     } else {
                         entry.url.takeLastWhile { it.isDigit() }
                     }
-                    val url =
-                        "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${number}.png"
+                    val url = "$IMAGE_URL$number.png"
+
                     val apiResponsePokemon = pokemonRepository.getPokemonInfo(entry.name)
 
                     apiResponsePokemon.data?.let { converters.pokemonToDBPokemon(it) }
@@ -124,20 +116,19 @@ class PokemonRemoteMediator (
 
                 endOfPaginationReached = pokemonEntries.isEmpty()
 
-
                 pokemonDatabase.withTransaction {
                     if (loadType == LoadType.REFRESH) {
                         pokemonDatabase.getRemoteKeysDao().clearRemoteKeys()
                         pokemonDatabase.getEntriesDao().clearAllEntries()
                         pokemonDatabase.getPokemonDao().clearAllPokemons()
                     }
-                    val prevKey = if (newCurrentPage > 0) newCurrentPage - 1 else null
-                    val nextKey = if (endOfPaginationReached) null else newCurrentPage + 1
+                    val prevKey = if (currentPage > 0) currentPage - 1 else null
+                    val nextKey = if (endOfPaginationReached) null else currentPage + 1
                     val remoteKeys = pokemonEntries.map {
-                        RemoteKeys(pokemonID = it.number, prevKey = prevKey, currentPage = newCurrentPage, nextKey = nextKey)
+                        RemoteKeys(pokemonID = it.number, prevKey = prevKey, currentPage = currentPage, nextKey = nextKey)
                     }
                     pokemonDatabase.getRemoteKeysDao().insertAll(remoteKeys)
-                    pokemonDatabase.getEntriesDao().insertAll(pokemonEntries.onEachIndexed { index, pokemon -> pokemon.number = index + newCurrentPage * Constants.PAGE_SIZE + 1})
+                    pokemonDatabase.getEntriesDao().insertAll(pokemonEntries.onEachIndexed { index, pokemon -> pokemon.number = index + currentPage * Constants.PAGE_SIZE + 1})
                     pokemonDatabase.getPokemonDao().insertAll(pokemons)
                 }
             }

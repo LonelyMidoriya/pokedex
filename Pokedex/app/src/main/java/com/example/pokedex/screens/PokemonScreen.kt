@@ -26,17 +26,15 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.asLiveData
 import androidx.navigation.NavController
 import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
 import com.example.pokedex.data.remote.responses.Pokemon
 import com.example.pokedex.data.remote.responses.Type
+import com.example.pokedex.util.Constants
 import com.example.pokedex.util.Converters
-import com.example.pokedex.util.Resource
 import com.example.pokedex.util.color
 import com.example.pokedex.viewmodels.PokemonViewModel
-import kotlinx.coroutines.flow.first
 import java.lang.Math.round
 import java.util.*
 
@@ -49,10 +47,8 @@ fun PokemonScreen(
     viewModel: PokemonViewModel = hiltViewModel()
 ) {
     val converters = Converters()
-
     val pokemonInfo = viewModel.getPokemonInfo(pokemonName)
-
-    val convertedPokemon = converters.dbPokemonToPokemon(pokemonInfo!!)
+    val convertedPokemon = converters.dbPokemonToPokemon(pokemonInfo)
 
     Box(modifier = Modifier
         .fillMaxSize()
@@ -94,8 +90,8 @@ fun PokemonScreen(
             modifier = Modifier
                 .fillMaxSize()) {
             var isImageLoading by remember { mutableStateOf(false) }
-            val url =
-                "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemonInfo.id}.png"
+
+            val url = "${Constants.IMAGE_URL}${pokemonInfo.id}.png"
             val painter = rememberAsyncImagePainter(url)
             isImageLoading = when(painter.state) {
                 is AsyncImagePainter.State.Loading -> true
@@ -147,7 +143,7 @@ fun PokemonDetailTopSection(
                 .size(36.dp)
                 .offset(16.dp, 16.dp)
                 .clickable {
-                    navController.navigateUp()
+                    navController.popBackStack()
                 }
         )
     }
@@ -174,7 +170,7 @@ fun PokemonDetailSection(
         Spacer(modifier = Modifier.height(50.dp))
         PokemonTypeSection(types = pokemonInfo.types)
         Spacer(modifier = Modifier.height(50.dp))
-        PokemonDetailDataSection(
+        PokemonDataSection(
             pokemonWeight = pokemonInfo.weight,
             pokemonHeight = pokemonInfo.height
         )
@@ -209,7 +205,7 @@ fun PokemonTypeSection(types: List<Type>) {
 }
 
 @Composable
-fun PokemonDetailDataSection(
+fun PokemonDataSection(
     pokemonWeight: Int,
     pokemonHeight: Int,
     sectionHeight: Dp = 80.dp
@@ -224,7 +220,7 @@ fun PokemonDetailDataSection(
         modifier = Modifier
             .fillMaxWidth()
     ) {
-        PokemonDetailDataItem(
+        PokemonDataItem(
             dataValue = pokemonWeightInKg,
             dataUnit = "kg",
             dataIcon = painterResource(id = com.example.pokedex.R.drawable.ic_weight),
@@ -234,7 +230,7 @@ fun PokemonDetailDataSection(
         Spacer(modifier = Modifier
             .size(1.dp, sectionHeight)
             .background(Color.LightGray))
-        PokemonDetailDataItem(
+        PokemonDataItem(
             dataValue = pokemonHeightInMeters,
             dataUnit = "m",
             dataIcon = painterResource(id = com.example.pokedex.R.drawable.ic_height),
@@ -244,7 +240,7 @@ fun PokemonDetailDataSection(
 }
 
 @Composable
-fun PokemonDetailDataItem(
+fun PokemonDataItem(
     dataValue: Float,
     dataUnit: String,
     dataIcon: Painter,

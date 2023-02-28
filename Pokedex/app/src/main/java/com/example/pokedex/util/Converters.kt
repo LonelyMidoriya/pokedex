@@ -26,7 +26,6 @@ class Converters {
         )
     }
 
-
     private fun getPokemonTypesString(types: List<Type>) : String {
         val typesString = StringBuilder("")
         for(i in types.indices) {
@@ -37,7 +36,6 @@ class Converters {
         }
         return typesString.toString()
     }
-
 
     private fun getPokemonTypes(typesString: String) : List<Type> {
         val typesStringList = typesString.split(",")
