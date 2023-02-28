@@ -1,6 +1,7 @@
-package com.example.pokedex.pokemonlist
+package com.example.pokedex.viewmodels
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.paging.*
 import com.example.pokedex.data.models.PokemonListEntry
 import com.example.pokedex.database.PokemonDatabase
@@ -31,5 +32,5 @@ class PokemonListViewModel @Inject constructor(
                 pokemonRepository,
                 pokemonDatabase,
             )
-        ).flow
+        ).flow.cachedIn(viewModelScope)
 }

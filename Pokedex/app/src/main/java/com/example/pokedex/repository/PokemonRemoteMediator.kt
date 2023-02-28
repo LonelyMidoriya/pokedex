@@ -6,6 +6,8 @@ import androidx.paging.PagingState
 import androidx.paging.RemoteMediator
 import androidx.room.withTransaction
 import com.example.pokedex.data.models.PokemonListEntry
+import com.example.pokedex.data.remote.responses.DBPokemon
+import com.example.pokedex.util.Converters
 import com.example.pokedex.database.PokemonDatabase
 import com.example.pokedex.database.RemoteKeys
 import com.example.pokedex.util.Constants
@@ -70,7 +72,6 @@ class PokemonRemoteMediator (
             }
             LoadType.PREPEND -> {
                 val remoteKeys = getRemoteKeyForFirstItem(state)
-
                 val prevKey = remoteKeys?.prevKey
                 prevKey ?: return MediatorResult.Success(endOfPaginationReached = remoteKeys != null)
             }
@@ -92,14 +93,16 @@ class PokemonRemoteMediator (
                 newCurrentPage = currentPage - 1
             }
 
-            val apiResponse = pokemonRepository.getPokemonList(Constants.PAGE_SIZE, (newCurrentPage) * Constants.PAGE_SIZE)
+            val apiResponsePokemonList = pokemonRepository.getPokemonList(Constants.PAGE_SIZE, (newCurrentPage) * Constants.PAGE_SIZE)
+            val pokemons: MutableList<DBPokemon> = mutableListOf()
 
             val endOfPaginationReached: Boolean
-            if (apiResponse.data==null){
+            if (apiResponsePokemonList.data==null){
                 endOfPaginationReached = true
             }
             else{
-                val pokemonEntries = apiResponse.data.results.mapIndexed { _, entry ->
+                val converters = Converters()
+                val pokemonEntries = apiResponsePokemonList.data.results.mapIndexed { _, entry ->
                     val number = if (entry.url.endsWith("/")) {
                         entry.url.dropLast(1).takeLastWhile { it.isDigit() }
                     } else {
@@ -107,6 +110,11 @@ class PokemonRemoteMediator (
                     }
                     val url =
                         "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${number}.png"
+                    val apiResponsePokemon = pokemonRepository.getPokemonInfo(entry.name)
+
+                    apiResponsePokemon.data?.let { converters.pokemonToDBPokemon(it) }
+                        ?.let { pokemons.add(it) }
+
                     PokemonListEntry(entry.name.replaceFirstChar {
                         if (it.isLowerCase()) it.titlecase(
                             Locale.ROOT
@@ -116,10 +124,12 @@ class PokemonRemoteMediator (
 
                 endOfPaginationReached = pokemonEntries.isEmpty()
 
+
                 pokemonDatabase.withTransaction {
                     if (loadType == LoadType.REFRESH) {
                         pokemonDatabase.getRemoteKeysDao().clearRemoteKeys()
                         pokemonDatabase.getEntriesDao().clearAllEntries()
+                        pokemonDatabase.getPokemonDao().clearAllPokemons()
                     }
                     val prevKey = if (newCurrentPage > 0) newCurrentPage - 1 else null
                     val nextKey = if (endOfPaginationReached) null else newCurrentPage + 1
@@ -128,6 +138,7 @@ class PokemonRemoteMediator (
                     }
                     pokemonDatabase.getRemoteKeysDao().insertAll(remoteKeys)
                     pokemonDatabase.getEntriesDao().insertAll(pokemonEntries.onEachIndexed { index, pokemon -> pokemon.number = index + newCurrentPage * Constants.PAGE_SIZE + 1})
+                    pokemonDatabase.getPokemonDao().insertAll(pokemons)
                 }
             }
             return MediatorResult.Success(endOfPaginationReached = endOfPaginationReached)

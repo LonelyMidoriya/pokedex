@@ -1,7 +1,8 @@
-package com.example.pokedex.pokemonlist
+package com.example.pokedex.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -20,11 +21,15 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.ContentScale
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.paging.compose.LazyPagingItems
 import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
 import com.example.pokedex.data.models.PokemonListEntry
+import com.example.pokedex.viewmodels.PokemonListViewModel
+import kotlinx.coroutines.coroutineScope
+import java.util.*
 
 
 @Composable
@@ -34,10 +39,6 @@ fun PokemonListScreen(
     val pokemonListViewModel = hiltViewModel<PokemonListViewModel>()
     val entries = pokemonListViewModel.getPokemonList().collectAsLazyPagingItems()
 
-    Surface(
-        color = MaterialTheme.colors.background,
-        modifier = Modifier.fillMaxSize()
-    ) {
         LazyVerticalGrid(columns =  GridCells.Fixed(2),
             horizontalArrangement = Arrangement.spacedBy(20.dp
             ),
@@ -46,7 +47,8 @@ fun PokemonListScreen(
                 top = 16.dp,
                 end = 12.dp,
                 bottom = 16.dp
-            ),){
+            )
+        ){
             items(
                 entries.itemCount
             ) { index ->
@@ -128,7 +130,7 @@ fun PokemonListScreen(
             }
         }
     }
-}}
+}
 
 @Composable
 fun PokemonEntry(
@@ -143,7 +145,12 @@ fun PokemonEntry(
             .aspectRatio(1f)
             .background(
                 Color.LightGray
-            )){Column(
+            )
+            .clickable {
+                navController.navigate(
+                    "pokemon_screen/${entry.pokemonName.lowercase(Locale.ROOT)}"
+                )
+            }){Column(
         horizontalAlignment = Alignment.CenterHorizontally
             ){
 

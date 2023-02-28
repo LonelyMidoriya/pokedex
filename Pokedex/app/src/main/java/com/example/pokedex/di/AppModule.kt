@@ -3,6 +3,7 @@ import android.content.Context
 import androidx.room.Room
 import com.example.pokedex.data.remote.PokeApi
 import com.example.pokedex.database.EntriesDao
+import com.example.pokedex.database.PokemonDao
 import com.example.pokedex.database.PokemonDatabase
 import com.example.pokedex.database.RemoteKeysDao
 import com.example.pokedex.repository.PokemonRepository
@@ -37,14 +38,19 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun provideMovieDatabase(@ApplicationContext context: Context): PokemonDatabase =
+    fun providePokemonDatabase(@ApplicationContext context: Context): PokemonDatabase =
         Room
-            .databaseBuilder(context, PokemonDatabase::class.java, "pokemon_database3")
+            .databaseBuilder(context, PokemonDatabase::class.java, "pokemon_database12")
+            .allowMainThreadQueries()
             .build()
 
     @Singleton
     @Provides
     fun provideMoviesDao(pokemonDatabase: PokemonDatabase): EntriesDao = pokemonDatabase.getEntriesDao()
+
+    @Singleton
+    @Provides
+    fun providePokemonDao(pokemonDatabase: PokemonDatabase): PokemonDao = pokemonDatabase.getPokemonDao()
 
     @Singleton
     @Provides
