@@ -1,9 +1,9 @@
 package com.example.pokedex.util
 
-import com.example.pokedex.data.remote.responses.DBPokemon
-import com.example.pokedex.data.remote.responses.Pokemon
-import com.example.pokedex.data.remote.responses.Type
-import com.example.pokedex.data.remote.responses.TypeX
+import com.example.pokedex.data.models.DBPokemon
+import com.example.pokedex.data.models.Pokemon
+import com.example.pokedex.data.models.Type
+import com.example.pokedex.data.models.TypeX
 
 class Converters {
     fun pokemonToDBPokemon(pokemon: Pokemon): DBPokemon {
@@ -16,7 +16,7 @@ class Converters {
         )
     }
 
-    fun dbPokemonToPokemon(dbPokemon: DBPokemon) : Pokemon{
+    fun dbPokemonToPokemon(dbPokemon: DBPokemon) : Pokemon {
         return Pokemon(
             dbPokemon.height,
             dbPokemon.id,

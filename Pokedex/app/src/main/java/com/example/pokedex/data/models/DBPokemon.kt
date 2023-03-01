@@ -1,4 +1,4 @@
-package com.example.pokedex.data.remote.responses
+package com.example.pokedex.data.models
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity

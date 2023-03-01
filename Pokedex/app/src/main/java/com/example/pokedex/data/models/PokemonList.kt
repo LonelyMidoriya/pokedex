@@ -1,5 +1,4 @@
-package com.example.pokedex.data.remote.responses
-
+package com.example.pokedex.data.models
 
 
 data class PokemonList(

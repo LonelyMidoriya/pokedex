@@ -29,11 +29,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
-import com.example.pokedex.data.remote.responses.Pokemon
-import com.example.pokedex.data.remote.responses.Type
+import com.example.pokedex.data.models.Pokemon
+import com.example.pokedex.data.models.Type
 import com.example.pokedex.util.Constants
 import com.example.pokedex.util.Converters
-import com.example.pokedex.util.color
+import com.example.pokedex.util.convertColor
 import com.example.pokedex.viewmodels.PokemonViewModel
 import java.lang.Math.round
 import java.util.*
@@ -53,7 +53,7 @@ fun PokemonScreen(
     Box(modifier = Modifier
         .fillMaxSize()
         .padding(bottom = 16.dp)
-        .background(color(type = convertedPokemon.types.get(0)))
+        .background(convertColor(type = convertedPokemon.types.get(0)))
     ) {
         PokemonDetailTopSection(
             navController = navController,
@@ -191,7 +191,7 @@ fun PokemonTypeSection(types: List<Type>) {
                     .weight(1f)
                     .padding(horizontal = 8.dp)
                     .clip(CircleShape)
-                    .background(color(type))
+                    .background(convertColor(type))
                     .height(35.dp)
             ) {
                 Text(

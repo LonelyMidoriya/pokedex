@@ -1,11 +1,11 @@
 package com.example.pokedex.util
 
 import androidx.compose.ui.graphics.Color
-import com.example.pokedex.data.remote.responses.Type
+import com.example.pokedex.data.models.Type
 import java.util.*
 
 
-fun color(type: Type): Color {
+fun convertColor(type: Type): Color {
     return when(type.type.name.lowercase(Locale.ROOT)) {
         "normal" -> Color(0xFFA8A77A)
         "fire" -> Color(0xFFEE8130)

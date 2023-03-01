@@ -3,7 +3,7 @@ package com.example.pokedex.database
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import com.example.pokedex.data.models.PokemonListEntry
-import com.example.pokedex.data.remote.responses.DBPokemon
+import com.example.pokedex.data.models.DBPokemon
 
 
 @Database(

@@ -6,13 +6,12 @@ import androidx.paging.PagingState
 import androidx.paging.RemoteMediator
 import androidx.room.withTransaction
 import com.example.pokedex.data.models.PokemonListEntry
-import com.example.pokedex.data.remote.responses.DBPokemon
+import com.example.pokedex.data.models.DBPokemon
 import com.example.pokedex.util.Converters
 import com.example.pokedex.database.PokemonDatabase
 import com.example.pokedex.database.RemoteKeys
 import com.example.pokedex.util.Constants
 import com.example.pokedex.util.Constants.IMAGE_URL
-import kotlinx.coroutines.delay
 import retrofit2.HttpException
 import java.io.IOException
 import java.util.*
@@ -86,7 +85,10 @@ class PokemonRemoteMediator (
         }
 
         try {
-            val apiResponsePokemonList = pokemonRepository.getPokemonList(Constants.PAGE_SIZE, (currentPage) * Constants.PAGE_SIZE)
+            val apiResponsePokemonList = pokemonRepository.getPokemonList(
+                Constants.PAGE_SIZE,
+                (currentPage) * Constants.PAGE_SIZE
+            )
             val pokemons: MutableList<DBPokemon> = mutableListOf()
             val endOfPaginationReached: Boolean
             if (apiResponsePokemonList.data==null){
@@ -125,10 +127,18 @@ class PokemonRemoteMediator (
                     val prevKey = if (currentPage > 0) currentPage - 1 else null
                     val nextKey = if (endOfPaginationReached) null else currentPage + 1
                     val remoteKeys = pokemonEntries.map {
-                        RemoteKeys(pokemonID = it.number, prevKey = prevKey, currentPage = currentPage, nextKey = nextKey)
+                        RemoteKeys(
+                            pokemonID = it.number,
+                            prevKey = prevKey,
+                            currentPage = currentPage,
+                            nextKey = nextKey
+                        )
                     }
                     pokemonDatabase.getRemoteKeysDao().insertAll(remoteKeys)
-                    pokemonDatabase.getEntriesDao().insertAll(pokemonEntries.onEachIndexed { index, pokemon -> pokemon.number = index + currentPage * Constants.PAGE_SIZE + 1})
+                    pokemonDatabase.getEntriesDao().insertAll(
+                        pokemonEntries.onEachIndexed {
+                                index, pokemon -> pokemon.number = index + currentPage * Constants.PAGE_SIZE + 1}
+                    )
                     pokemonDatabase.getPokemonDao().insertAll(pokemons)
                 }
             }

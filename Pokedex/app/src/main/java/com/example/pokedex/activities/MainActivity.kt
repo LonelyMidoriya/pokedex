@@ -36,7 +36,11 @@ class MainActivity : ComponentActivity() {
                     startDestination = "pokemon_list_screen"
                 ) {
                     composable("pokemon_list_screen") {
-                        PokemonListScreen(navController = navController, state = state, viewModel = hiltViewModel<PokemonListViewModel>())
+                        PokemonListScreen(
+                            navController = navController,
+                            state = state,
+                            viewModel = hiltViewModel<PokemonListViewModel>()
+                        )
                     }
                     composable(
                         "pokemon_screen/{pokemonName}",

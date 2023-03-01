@@ -26,7 +26,6 @@ import androidx.paging.compose.LazyPagingItems
 import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
 import com.example.pokedex.data.models.PokemonListEntry
-import com.example.pokedex.util.Converters
 import com.example.pokedex.viewmodels.PokemonListViewModel
 import java.util.*
 
@@ -36,8 +35,8 @@ fun PokemonListScreen(
     navController: NavController,
     state: LazyGridState,
     viewModel: PokemonListViewModel,
+    entries: LazyPagingItems<PokemonListEntry>? = viewModel.getPokemonList().collectAsLazyPagingItems()
 ) {
-    val entries = viewModel.getPokemonList().collectAsLazyPagingItems()
         LazyVerticalGrid(
             columns =  GridCells.Fixed(2),
             horizontalArrangement = Arrangement.spacedBy(20.dp),
@@ -50,7 +49,7 @@ fun PokemonListScreen(
             ),
             content = {
                 items(
-                entries.itemCount
+                entries!!.itemCount
             ) { index ->
                 PokemonCard(index = index, entries = entries, navController = navController)
             }
@@ -58,8 +57,8 @@ fun PokemonListScreen(
                 val loadState = entries.loadState.mediator
                 if (loadState?.refresh == LoadState.Loading) {
                 Column(
-                    modifier = Modifier
-                        .fillMaxSize(),
+                    modifier = Modifier.fillMaxWidth().fillMaxHeight()
+                        ,
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
                 ) {
@@ -147,7 +146,7 @@ fun PokemonEntry(
     )
     {
         Column(
-        horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally
             )
         {
             if (entry.imageUrl != null) {
@@ -198,11 +197,9 @@ fun PokemonCard(
     Column {
         Row {
             entries[index]?.let {
-                val converters = Converters()
                 PokemonEntry(
                     entry = it,
                     modifier = Modifier.weight(1f)
-                        .background(Color.LightGray)
                         .clickable() {
                             navController.navigate(
                                 "pokemon_screen/${it.pokemonName.lowercase(Locale.ROOT)}"
